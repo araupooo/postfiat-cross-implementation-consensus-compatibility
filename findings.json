@@ -1,0 +1,178 @@
+{
+ "generated_at_utc": "2026-11-22T17:42:09Z",
+ "findings": [
+  {
+   "id": "F01",
+   "severity": "CRITICAL",
+   "title": "Consensus models are structurally different: single-round validation quorum vs two-phase prepare/precommit quorum certificates",
+   "status": "MEASURED",
+   "evidence": [
+    "postfiatd validates a ledger when trusted validations on one ledger hash reach the validation quorum (17 of UNL 25): ValidatorList::calculateQuorum returns max(ceil(0.67*effectiveUNL), ceil(0.60*UNL)) (fixtures/source-excerpts/ValidatorList-quorum.txt); live check: UNL 25 -> ceil(25*0.67)=17, reported validation_quorum=17 (outputs/derived/validators.json quorum_check).",
+    "postfiatl1v2 Consensus v2 commits only on a precommit QC of q distinct votes for the same non-nil block, after a prepare QC of q votes becomes the durable lock (docs/architecture/finality.md). q = floor(2n/3)+1, f = floor((n-1)/3); code: bft_quorum_threshold, crates/ordering_fast/src/lib.rs:345-356.",
+    "At n=25 both formulas give 17, so the live number does not distinguish them; they diverge at n=103 (postfiatd 70, l1v2 69) and the mechanisms (one validation message vs two QC phases with locks and view-change timeout certificates) never coincide."
+   ],
+   "gate": "BLOCKS any claim that the two implementations validate the same ledger by the same rule. A convergence must pick one commit rule and re-derive quorum, liveness, and fork-safety arguments under it."
+  },
+  {
+   "id": "F02",
+   "severity": "CRITICAL",
+   "title": "No shared amendment/upgrade mechanism: postfiatd feature voting vs l1v2 per-kind height-based governance",
+   "status": "MEASURED",
+   "evidence": [
+    "postfiatd activates protocol changes by validator vote: majority threshold 67%% after fixAmendmentMajorityCalc (204/256 = 79.6875%% before it), held for a majority time of 2 weeks by default, 3 days on this testnet (include/xrpl/protocol/SystemParameters.h:83-88; cfg/postfiatd-testnet-full.cfg:1467-1468). Live: 101 known, 64 enabled, all at one bulk enablement point; fixAmendmentMajorityCalc enabled (outputs/derived/amendments.json).",
+    "postfiatl1v2 DOES have a governance-amendment object (GovernanceAmendment, crates/types/src/shielded_bridge_governance.rs:2011-2034, with quorum, support, activation_height, veto_until_height fields), but it is not a validator vote over feature flags: activation is per-kind and height-based (latest committed amendment wins for fee/memo gates; earliest unpaused height wins for recipient format), and no single global majority threshold or time-based supermajority rule exists anywhere in the spec or code.",
+    "The most precisely specified l1v2 amendments are the two external-lane kinds (release cap, committee epoch), authorized by the registry threshold floor(2n/3)+1 at a named activation height, with a 7-window delay for cap raises (docs/architecture/genesis-external-lanes.md:165-180). No veto procedure is specified beyond the veto_until_height field.",
+    "Protocol upgrades in l1v2 are otherwise operator-controlled releases and genesis-boundary changes, not voted feature flags: 'Running nodes acquire the corrected authorization behavior only through an operator-controlled release' (docs/architecture/consensus-signing-rounds.md); Consensus v2 activation itself is a genesis-committed height (docs/architecture/finality.md)."
+   ],
+   "gate": "BLOCKS any migration that assumes amendments carry over. Every live postfiatd amendment would need an explicit l1v2 disposition (re-implement as a governance kind, drop, or replace with a registry change) before convergence."
+  },
+  {
+   "id": "F03",
+   "severity": "HIGH",
+   "title": "Genesis construction is incompatible: fresh single-account genesis vs scored-registry genesis with ML-DSA identity bridge",
+   "status": "MEASURED",
+   "evidence": [
+    "postfiatd genesis is Ledger::Ledger(create_genesis_t): seq 1, drops = INITIAL_XRP (100,000,000,000 PFT), the whole supply in one account, r4vhrMChCsaoFsBoCkRTRGUuc1njfr7bmA on networks 2025/2026 (src/xrpld/app/ledger/Ledger.cpp:169-256). Live reconciliation closes exactly: genesis account plus other accounts plus burned fees equals the 100B supply (outputs/derived/live-testnet-snapshot.json).",
+    "postfiatl1v2 genesis is a ratified registry: G0 = Selected intersect Receipted from a frozen Dynamic UNL round on the fork, min n_S >= 12, template trust graph q_S = ceil(4*n_S/5), ML-DSA-65 identity receipts, domain-separated SHA-256 payload hash, certificate of >= q_S signatures (docs/architecture/l1v2-testnet-genesis-and-launch-spec.md \u00a73).",
+    "The l1v2 design holds the native supply minus the lanes in a faucet at genesis, with ERC-20 slice atoms reserved in genesis external lanes (docs/architecture/pft-token-on-base.md). The slice size is open; nothing is deployed on Base mainnet."
+   ],
+   "gate": "BLOCKS a shared genesis. A converged network needs one genesis construction; the postfiatd single-account genesis cannot be replayed into the l1v2 ratified-registry genesis without a new chain ID and a new genesis payload."
+  },
+  {
+   "id": "F04",
+   "severity": "HIGH",
+   "title": "Quorum must change at convergence: testnet runs a 67% quorum the code says to revert to 80% for mainnet, while l1v2 uses floor(2n/3)+1",
+   "status": "MEASURED",
+   "evidence": [
+    "ValidatorList::calculateQuorum comment: 'Original XRPL uses 80%%, but this fork uses 67%% for devnet/testnet. For mainnet, this should be reverted to 80%%.' (fixtures/source-excerpts/ValidatorList-quorum.txt). At 80%% a 25-member UNL needs 20 validations; no 80%% quorum has ever run on this network.",
+    "l1v2's quorum is floor(2n/3)+1 with f = floor((n-1)/3) \u2014 a BFT bound, not a tunable percentage (crates/ordering_fast/src/lib.rs:345-356; test computes_supermajority_quorum_thresholds verifies n=1..64). The launch trust graph adds a third rule: q_S = ceil(4*n_S/5) for genesis ratification (10 of 12).",
+    "Three different quorum rules therefore exist across the two implementations and the launch profile (67%% testnet, 80%% mainnet fork, floor(2n/3)+1 Consensus v2, 4/5 genesis ratification). No single value satisfies all four."
+   ],
+   "gate": "REQUIRED before any convergence: pick one quorum rule per phase (genesis ratification, consensus, registry evolution), prove fork-safety under it, and measure liveness with the production validator set."
+  },
+  {
+   "id": "F05",
+   "severity": "HIGH",
+   "title": "No external audit of either codebase; l1v2 release gates mostly open",
+   "status": "UNRESOLVED",
+   "evidence": [
+    "postfiatl1v2 docs/security/index.md: 'No external security audit is recorded in this repository.' Release-gate inventory at the pinned revision: 21 gates, 4 DONE, 16 OPEN, 1 UNKNOWN. Gate 8 (migration, rollback, canary) OPEN; gate 20 (topology/independence thresholds) OPEN; gate 12 (specialist review) OPEN; gate 13 (SP1 reproduction) OPEN.",
+    "No external audit is recorded for postfiatd either; the founder's 'multi-million-dollar audit' is a statement, not a scoped engagement: no auditor, scope, or date is published.",
+    "Launch-topology thresholds are a proposal only, awaiting the operator's confirmation (2026-09-01): 'This document decides nothing.'"
+   ],
+   "gate": "BLOCKS a production convergence. An audit scope covering both consensus implementations and the genesis/registry machinery must exist before any shared mainnet."
+  },
+  {
+   "id": "F06",
+   "severity": "HIGH",
+   "title": "Ledger-close timing has no l1v2 counterpart: postfiatd measures ~3 s closes, l1v2 specifies no cadence",
+   "status": "UNRESOLVED",
+   "evidence": [
+    "Live postfiatd cadence: mean close interval 3.046 s over 197 ledgers (outputs/cadence-run1.jsonl); last close converge time 2001 ms with 24 proposers; close_time_resolution 10 s (outputs/derived/live-testnet-snapshot.json). Code bounds: ledgerMIN_CLOSE 2 s, ledgerIDLE_INTERVAL 15 s, ledgerMAX_CONSENSUS 15 s (src/xrpld/consensus/ConsensusParms.h). Close-time agreement needs 75% (avCT_CONSENSUS_PCT).",
+    "No block time, slot duration, round duration, or ledger-close cadence is specified anywhere in the pinned l1v2 docs or code surveyed (finality.md, consensus-signing-rounds.md, overview.md, transaction-lifecycle.md, whitepaper.md). Consensus v2 progress is view/timeout driven, not cadence driven. The only running l1v2 network makes blocks only when transactions are pending: 'The chain makes blocks only when there are transactions to order, so height does not advance with wall-clock time. A height that has not moved for days is normal on this devnet.' (docs/status/network-status.md:55-56; devnet postfiat-wan-devnet-2, 6 Foundation validators, quorum 5 of 6, height 1513 at the 2026-11-19 observation).",
+    "A converged network therefore has no agreed close cadence to measure liveness against; the ~3 s figure is a postfiatd-only observation."
+   ],
+   "gate": "REQUIRED before convergence: specify the l1v2 close/view timing (or state explicitly that none exists) and define the liveness metric the converged network is measured by."
+  },
+  {
+   "id": "F07",
+   "severity": "MEDIUM",
+   "title": "Validation lifetimes differ and l1v2's are unspecified",
+   "status": "UNRESOLVED",
+   "evidence": [
+    "postfiatd validation validity windows: VALID_WALL 5 min, VALID_LOCAL 3 min, VALID_EARLY 3 min pre-close; proposals fresh 20 s, re-proposed every 12 s (src/xrpld/consensus/ConsensusParms.h:40-80).",
+    "postfiatl1v2 signs prepare/precommit/timeout votes under a durable round floor (max of the three high-water marks) with no stated expiry window; a vote's validity is governed by round monotonicity and certificate verification, not by a wall-clock lifetime (docs/architecture/consensus-signing-rounds.md; docs/architecture/finality.md). No numeric lifetime is specified in the surveyed docs.",
+    "Consequence: a postfiatd validation expires after minutes; an l1v2 vote persists until superseded by a higher round. Replay/retention behavior across the boundary is undefined."
+   ],
+   "gate": "Convergence precondition: define vote/validation lifetimes and replay rules for the converged protocol."
+  },
+  {
+   "id": "F08",
+   "severity": "MEDIUM",
+   "title": "One UNL member is stale; l1v2 launch requires all seats preflight-READY",
+   "status": "MEASURED",
+   "evidence": [
+    "UNL member nHBxQ3srN8ErMvfMgsJ3jycSSaMFyHMk5WbrJVUTXPZgNh1VdbHH: 24h agreement 0.00000, current_index 8179976 vs network 8275824 at probe time (~95848 ledgers behind). 1 of 25 UNL members contributes nothing to current consensus.",
+    "l1v2 launch profile requires every seat preflight-READY at launch and 12 of 12 seats on the exact pinned binary (docs/architecture/launch-topology-thresholds.md \u00a72.4-2.5). A stale member would fail the launch preflight.",
+    "UNL versions: ['1.0.9']; all UNL domains verified: True. 12 of 66 validators run older builds (none on the UNL)."
+   ],
+   "gate": "Convergence precondition: remove or repair the stale UNL member and re-measure UNL agreement before any shared validator set is frozen."
+  },
+  {
+   "id": "F09",
+   "severity": "MEDIUM",
+   "title": "Validator identity and key types are incompatible across implementations",
+   "status": "MEASURED",
+   "evidence": [
+    "postfiatd validators are secp256k1 identities with manifests and a publisher-served validator list (VL v2, blob sequence None, effective None). Live UNL: 25 validators from the published list (outputs/derived/validators.json).",
+    "l1v2 validators are ML-DSA-65 identities, bridged from fork secp256k1 keys by dual-signed identity receipts (docs/architecture/l1v2-testnet-genesis-and-launch-spec.md \u00a73.2). Consensus v2 artifacts bind chain/genesis/protocol, committee epoch/root, height/view, parent, payload, and state root.",
+    "No postfiatd validator key can sign an l1v2 vote without the identity-bridge receipt; no l1v2 ML-DSA key can sign a postfiatd validation."
+   ],
+   "gate": "Convergence precondition: every shared validator must complete the identity bridge (fresh ML-DSA key, dual-signed receipt) before it can vote on both implementations."
+  },
+  {
+   "id": "F10",
+   "severity": "MEDIUM",
+   "title": "Public observability gaps on the live testnet; l1v2 has no public network to observe",
+   "status": "MEASURED",
+   "evidence": [
+    "Explorer /api/v1/health returns HTTP 500 '{\"message\":\"rippled unreachable\"}' while /api/v1/metrics works (base_fee 0.00001, txn_sec 0.09).",
+    "VHS topology reports node_count 72 but link_count 0, while per-node inbound/outbound sums are 690/701 \u2014 the aggregate contradicts the per-node data.",
+    "VHS /v1/network/amendments returns a service index only, not amendment data; the vote data comes from /v1/network/amendments/vote/test. VHS health returns {\"count\": \"9\"} \u2014 a count, not a health status.",
+    "VHS /v1/network/networks still lists 2 webhook.site test entries alongside the real test network.",
+    "WebSocket ledger subscribe: see outputs/ws_upgrade_probe.txt. Public monitoring depends on HTTP polling.",
+    "postfiatl1v2 has no public network: the only running network in its docs is the controlled devnet postfiat-wan-devnet-2; 'It is not a production mainnet, no public testnet is open.' Its behavior is therefore specified, not observed."
+   ],
+   "gate": "Convergence precondition: fix or document every observability gap; a converged network cannot be monitored on endpoints that report unreachable/0."
+  },
+  {
+   "id": "F11",
+   "severity": "LOW",
+   "title": "1:1 conversion exists only as an l1v2 design; no mechanism for the live testnet",
+   "status": "UNRESOLVED",
+   "evidence": [
+    "No conversion, carryover, or 1:1 mechanism is published for the live postfiatd testnet (network 2025). The whitepaper contains no conversion text; postfiatd source contains no migration/carryover path (genesis is a fresh ledger: Ledger::Ledger(create_genesis_t), fixtures/source-excerpts/Ledger-genesis.txt).",
+    "The only documented 1:1 path is the l1v2 design: ERC-20 PFT on Base with a one-for-one path into native PFT at PFTL mainnet genesis via genesis external lanes (docs/architecture/pft-token-on-base.md, genesis-external-lanes.md). Nothing is deployed on Base mainnet; only Base Sepolia test deployments exist. The slice size of the 100B supply is open.",
+    "The 2026-11-06 rehearsal released 1 PFT on a local six-validator fleet with a stand-in finality verifier; the recorded postfiat-wan-devnet-2 genesis has no such lane."
+   ],
+   "gate": "BLOCKS any balance-carryover claim. Testnet balances must be assumed lost at convergence until a mechanism is published and exercised on a public network."
+  },
+  {
+   "id": "F12",
+   "severity": "LOW",
+   "title": "No mainnet date; l1v2 launch gates unmet; mainnet ordering undecided",
+   "status": "UNRESOLVED",
+   "evidence": [
+    "No official mainnet/TGE date is published anywhere in the surveyed sources (whitepaper, docs.postfiat.org, both repos). docs.postfiat.org returns a Notion JavaScript shell with no retrievable content (outputs/docs_postfiat_org.html).",
+    "Founder statement, #validator-ops, 2026-09-18: mainnet ordering undecided, leaning toward the 'painful option', likely option 2 (mainnet on postfiatl1v2 with inherited validator governance after a multi-million-dollar audit). The 'painful option' was never explicitly named as option 2; that link is an inference, not a quotation.",
+    "l1v2 launch gates L1-L6 (docs/architecture/l1v2-testnet-genesis-and-launch-spec.md \u00a75) are not satisfied: no public testnet exists, the genesis registry is not built, and the L3 independence verifier is still to be built."
+   ],
+   "gate": "BLOCKS any convergence schedule. No date can be committed."
+  },
+  {
+   "id": "F13",
+   "severity": "LOW",
+   "title": "Cosmetic divergence: postfiatd still reports the native currency code as 'XRP' in source",
+   "status": "MEASURED",
+   "evidence": [
+    "SystemParameters.h systemCurrencyCode() returns \"XRP\" (include/xrpl/protocol/SystemParameters.h) while the asset is PFT. Ledger behavior is unaffected (amounts are drops of the native asset); only display/code strings are stale.",
+    "l1v2 uses PFT throughout (native PFT, PFT atoms, ERC-20 PFT)."
+   ],
+   "gate": "None for convergence; rename before any shared mainnet to avoid integrator confusion."
+  },
+  {
+   "id": "F14",
+   "severity": "INFO",
+   "title": "Verified healthy: live testnet validates steadily, genesis supply reconciles, amendment state agrees across two sources",
+   "status": "VERIFIED",
+   "evidence": [
+    "Genesis supply 100,000,000,000 PFT (INITIAL_XRP, SystemParameters.h:44) reconciles: genesis account holds 96999999999.999878 PFT, other accounts hold 2999999966.551556 PFT, 33.448564 PFT burned in fees; sum closes exactly (outputs/derived/live-testnet-snapshot.json).",
+    "Cadence: 197 ledgers across 21 samples at 30-second intervals, mean close interval 3.046 s (outputs/cadence-run1.jsonl). Fee queue empty (0/2000), base fee 10 drops, median fee 5000 drops.",
+    "Amendment state agrees across two independent sources: RPC `feature` reports 64 enabled of 101 known; VHS vote endpoint reports 64 enabled with identical names.",
+    "All 64 enabled amendments share one enablement point: ledger [86785], ['2026-02-09T14:31:12.000Z'] (genesis-era bulk enablement).",
+    "Latest release v1.0.9 (2026-10-10) is the live build on all 25 UNL members and on the RPC node."
+   ],
+   "gate": "None. This is the evidence that the testnet itself is healthy; it does not imply the implementations are compatible."
+  }
+ ]
+}

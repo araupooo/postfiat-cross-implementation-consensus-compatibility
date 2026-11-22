@@ -1,0 +1,42 @@
+{
+ "pack": "PostFiat cross-implementation consensus compatibility assessment",
+ "generated_at_utc": "2026-11-22T17:42:09Z",
+ "probe_window_utc": "2026-11-22: main probe batch 17:28-17:29Z, cadence 21x30s 17:29-17:40Z (see outputs/cadence-run1.log)",
+ "environment": {
+  "python": "3.12.3",
+  "tools": "curl, git, python3 (stdlib only)",
+  "network": "public endpoints only; no credentials, sessions, accounts, or signing"
+ },
+ "repo_pins": {
+  "postfiatd": "0085a1ff885d6a446369cf73a4430f75af22be55 (2026-10-10, PR #50 merge, v1.0.9)",
+  "postfiatl1v2": "071b6dc461efc7a9105b2d3cac6acd3686901e7d (2026-11-22)"
+ },
+ "live_endpoints": [
+  "https://rpc.testnet.postfiat.org/ (postfiatd 1.0.9, network_id 2025)",
+  "https://vhs.testnet.postfiat.org/v1/",
+  "https://explorer.testnet.postfiat.org/api/v1/",
+  "https://postfiat.org/ and https://postfiat.org/whitepaper/ (Sept 2026)",
+  "https://docs.postfiat.org (Notion JavaScript shell; no retrievable content)"
+ ],
+ "counts": {
+  "findings_total": 14,
+  "by_severity": {
+   "CRITICAL": 2,
+   "HIGH": 4,
+   "MEDIUM": 4,
+   "LOW": 3,
+   "INFO": 1
+  },
+  "by_status": {
+   "MEASURED": 8,
+   "UNRESOLVED": 5,
+   "VERIFIED": 1
+  }
+ },
+ "verdict": "NOT COMPATIBLE as specified: 2 CRITICAL + 4 HIGH findings. The two implementations run different consensus models, different quorum rules, different amendment mechanisms, and different genesis constructions. Convergence requires picking one rule per area and re-proving it; nothing in this pack performs that convergence.",
+ "notes": [
+  "Assessment only: no cutover or convergence performed, no mainnet touched, no funds spent, nothing signed.",
+  "The live postfiatd testnet (XRPL-fork, network 2025) and the postfiatl1v2 design (Consensus v2) are different systems; this pack keeps measured (live testnet) and specified (l1v2 design) claims apart throughout.",
+  "Boundary note: the reordered-validation vote-replay work is out of scope for this pack and is not analyzed here."
+ ]
+}

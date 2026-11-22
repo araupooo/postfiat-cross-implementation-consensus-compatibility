@@ -1,0 +1,2 @@
+{"result":{"account":"r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59","error":"actNotFound","error_code":19,"error_message":"Account not found.","ledger_hash":"1A55AA5944A5E85ACE4A44E90BA7EF07612F298EB39172AC0CFE36A65067D332","ledger_index":8276212,"request":{"account":"r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59","command":"account_info","ledger_index":"validated"},"status":"error","validated":true}}
+

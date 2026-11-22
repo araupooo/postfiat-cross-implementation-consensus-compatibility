@@ -1,0 +1,17 @@
+PASS network_id 2025 both runs | shipped=2025 fresh=2025
+PASS build_version 1.0.9 both runs | shipped=1.0.9 fresh=1.0.9
+PASS validated seq advances | shipped=8275824 fresh=8276210
+PASS validated seq within 200000 (sanity) | delta=386
+PASS peers in 15..30 both runs | shipped=21 fresh=21
+PASS quorum formula holds both runs | shipped quorum=17 fresh quorum=17 UNL=25/25
+PASS UNL count 20..30 both runs | shipped=25 fresh=25
+PASS validators total 50..90 both runs | shipped=66 fresh=66
+PASS enabled amendments 60..70 both runs | shipped=64 fresh=64
+PASS RPC/VHS amendment agreement both runs | shipped=True fresh=True
+PASS PF native amendments still disabled both runs | shipped={'PF_ValidatorVoteTracking': {'enabled': False, 'id': '213D9785EF1C34BC0F99BF190299B814AE0563E047DC457C9CB53B6FC02D4B70'}, 'PF_AccountExclusion': {'enabled': False, 'id': '56857392BEADCE1E4B0D754A91B73F1D053657AF4FDD585455D4FFBCD5307BE0'}} fresh={'PF_ValidatorVoteTracking': {'enabled': False, 'id': '213D9785EF1C34BC0F99BF190299B814AE0563E047DC457C9CB53B6FC02D4B70'}, 'PF_AccountExclusion': {'enabled': False, 'id': '56857392BEADCE1E4B0D754A91B73F1D053657AF4FDD585455D4FFBCD5307BE0'}}
+PASS cadence mean close interval 2.5..4.0 s both runs | shipped=3.046 fresh=3.000
+PASS supply reconciliation closes both runs | shipped burned=33.448564 PFT fresh burned=33.449956 PFT
+PASS differential-probe status counts identical | shipped={'PASS': 1, 'DIVERGENT': 8, 'UNVERIFIED': 6} fresh={'PASS': 1, 'DIVERGENT': 8, 'UNVERIFIED': 6}
+PASS explorer base_fee identical | base_fee=0.00001
+
+COMPARISON: ALL CHECKS PASSED (15 checks)

@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>PostFiat Cross-Implementation Consensus Compatibility Assessment</title>
+<style>
+body{font-family:system-ui,-apple-system,sans-serif;max-width:900px;margin:2em auto;padding:0 1em;line-height:1.5;color:#111}
+h1{font-size:1.6em} h2{font-size:1.25em;margin-top:1.5em}
+table{border-collapse:collapse;width:100%} td,th{border:1px solid #ccc;padding:.4em .6em;text-align:left;font-size:.95em}
+.verdict{background:#fde8e8;border:1px solid #c00;padding:1em}
+code{font-size:.9em}
+</style>
+</head>
+<body>
+<h1>PostFiat Cross-Implementation Consensus Compatibility Assessment</h1>
+<div class="verdict"><strong>Verdict: NOT COMPATIBLE as specified.</strong>
+2 CRITICAL + 4 HIGH findings. The two implementations run different consensus
+models, different quorum rules, different amendment mechanisms, and different
+genesis constructions. Convergence requires picking one rule per area and
+re-proving it; nothing in this pack performs that convergence.</div>
+
+<h2>Headline numbers (measured 2026-11-22, live testnet, network 2025)</h2>
+<table>
+<tr><th>Measurement</th><th>Value</th></tr>
+<tr><td>Build / network / state</td><td>postfiatd 1.0.9, network_id 2025, <code>full</code>, 21 peers</td></tr>
+<tr><td>Validated ledger</td><td>seq 8,275,824 (probe), complete 8,200,054–8,275,824</td></tr>
+<tr><td>Ledger cadence</td><td>197 ledgers / 601.3 s, mean close interval 3.046 s</td></tr>
+<tr><td>Validation quorum</td><td>17 of UNL 25 (67% formula; code says revert to 80% for mainnet)</td></tr>
+<tr><td>l1v2 quorum for the same n</td><td>floor(2×25/3)+1 = 17 (agrees at n=25; diverges at n=103: 70 vs 69)</td></tr>
+<tr><td>Validators / UNL</td><td>66 validators, 25 UNL (all 1.0.9, all domains verified)</td></tr>
+<tr><td>Stale UNL member</td><td>1 of 25 at 0.00000 24h agreement (~95,848 ledgers behind)</td></tr>
+<tr><td>Genesis supply reconciliation</td><td>100B PFT = 96,999,999,999.99988 (genesis) + 2,999,999,966.551556 (other accounts) + 33.448564 burned — closes exactly</td></tr>
+<tr><td>Amendments</td><td>101 known, 64 enabled (RPC <code>feature</code> == VHS vote endpoint, exact name match); all 64 enabled at ledger 86785, 2026-02-09</td></tr>
+<tr><td>PostFiat-native amendments</td><td><code>PF_ValidatorVoteTracking</code> and <code>PF_AccountExclusion</code> NOT enabled</td></tr>
+<tr><td>Fees</td><td>base 10 drops, median 5000, queue 0/2000</td></tr>
+<tr><td>l1v2 network</td><td>None public. Only devnet <code>postfiat-wan-devnet-2</code>: 6 Foundation validators, quorum 5 of 6, height 1513 (2026-11-19)</td></tr>
+<tr><td>External audit</td><td>none recorded for either codebase</td></tr>
+<tr><td>1:1 conversion</td><td>no mechanism for the live testnet; the only documented path (ERC-20 PFT on Base) is an l1v2 design, nothing on Base mainnet</td></tr>
+<tr><td>Mainnet date</td><td>none published anywhere</td></tr>
+</table>
+
+<h2>Counts (recomputed from the tables)</h2>
+<table>
+<tr><th>List</th><th>Counts</th></tr>
+<tr><td>Findings (findings.json)</td><td>14 total: 2 CRITICAL, 4 HIGH, 4 MEDIUM, 3 LOW, 1 INFO; 8 MEASURED, 5 UNRESOLVED, 1 VERIFIED</td></tr>
+<tr><td>Claims (docs/claim-index.md)</td><td>30 total: 12 VERIFIED, 10 SPECIFIED, 8 UNVERIFIED</td></tr>
+<tr><td>Differential scenarios (outputs/derived/differential-probes.json)</td><td>15 total: 1 PASS, 8 DIVERGENT, 6 UNVERIFIED</td></tr>
+<tr><td>Risks (docs/risk-register.md)</td><td>16 total: 7 blockers, 3 benign differences, 6 unknowns</td></tr>
+</table>
+
+<h2>Contents</h2>
+<ul>
+<li><a href="divergence-map.md">docs/divergence-map.md</a> — file-and-line divergence map (quorum, validation/close, amendment, genesis)</li>
+<li><a href="decision-memo.md">docs/decision-memo.md</a> — migration decision memo</li>
+<li><a href="risk-register.md">docs/risk-register.md</a> — severity-scored convergence risk register</li>
+<li><a href="claim-index.md">docs/claim-index.md</a> — claim-to-evidence index (every unverifiable claim marked)</li>
+<li><a href="methodology.md">docs/methodology.md</a> — how each number was produced, and limitations</li>
+<li><a href="citations.md">docs/citations.md</a> — every pinned primary source</li>
+<li><a href="evidence-index.md">docs/evidence-index.md</a> — every claim traced to an unedited output</li>
+</ul>
+<p>Boundary note: the reordered-validation vote-replay work is out of scope
+for this pack and is not analyzed here.</p>
+<p>Assessment only: no cutover or convergence performed, no mainnet touched,
+no funds spent, nothing signed.</p>
+<p>Pinned revisions: postfiatd
+<code>0085a1ff885d6a446369cf73a4430f75af22be55</code> (2026-10-10);
+postfiatl1v2 <code>071b6dc461efc7a9105b2d3cac6acd3686901e7d</code> (2026-11-22).</p>
+</body>
+</html>

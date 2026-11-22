@@ -1,0 +1,2 @@
+{"result":{"error":"unknownCmd","error_code":32,"error_message":"Unknown method.","request":{"command":"no_such_method"},"status":"error"}}
+

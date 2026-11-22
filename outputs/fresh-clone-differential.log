@@ -1,0 +1,22 @@
+input live-testnet-snapshot.json sha256=9e721ac44aeb894db429f71acddf10e00590e9ae55e835006813bda094fd9801
+input validators.json sha256=dad075c9fd841b64c20e0623f424a3b24d37fc114117ba47e93f035bb0dbf99a
+input amendments.json sha256=a532b65370a57111c8f76aee414eabb5093b235a8a24b70fc50e0b93fd5e426d
+input cadence.json sha256=92241b86c51138efc97782af5f1f56f46f5ee7e69b3db031f2e9af2e044b8945
+input fixtures/l1v2-expectations.json sha256=7ec71e95b27e6a1e3528c90b1b1bc7ccd0fa6777df1867189d5236ae2c8d33ea
+D01 PASS: Quorum arithmetic at the live UNL size (n=25)
+D02 DIVERGENT: Quorum arithmetic at n=103 (first divergence)
+D03 DIVERGENT: Quorum at the l1v2 launch minimum (n=12)
+D04 UNVERIFIED: Ledger close cadence within postfiatd bounds; no l1v2 cadence
+D05 UNVERIFIED: Ledger close-time resolution
+D06 UNVERIFIED: Last-close converge time vs postfiatd max consensus
+D07 DIVERGENT: Amendment majority threshold
+D08 DIVERGENT: Amendment majority hold time
+D09 UNVERIFIED: Genesis supply reconciliation
+D10 DIVERGENT: Genesis construction model
+D11 DIVERGENT: Validation / vote lifetimes
+D12 DIVERGENT: Commit rule
+D13 DIVERGENT: Validator identity and key type
+D14 UNVERIFIED: External audit recorded
+D15 UNVERIFIED: Mainnet / TGE date published
+wrote differential-probes.json sha256=dd62da88a11107f6d87b0b838eb0e7c90d31f985316ed86b90408d5f88985d69
+counts: {'scenarios_total': 15, 'by_status': {'DIVERGENT': 8, 'PASS': 1, 'UNVERIFIED': 6}, 'by_area': {'amendment activation': 3, 'genesis construction': 3, 'quorum': 4, 'validation and ledger close': 5}}

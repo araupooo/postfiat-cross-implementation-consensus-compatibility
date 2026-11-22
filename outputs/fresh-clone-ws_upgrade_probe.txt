@@ -1,0 +1,14 @@
+== wss://rpc.testnet.postfiat.org:443 ==
+HTTP/1.1 200 Connection Established
+
+HTTP/1.1 401 Unauthorized
+Alt-Svc: h3=":443"; ma=2592000
+Date: Sun, 22 Nov 2026 17:48:51 GMT
+Content-Type: text/html
+Server: Caddy
+Server: postfiatd-1.0.9
+Content-Length: 17
+
+Invalid protocol.== wss://rpc.testnet.postfiat.org:6005 ==
+HTTP/1.1 200 Connection Established
+

@@ -1,0 +1,27 @@
+File: crates/types/src/shielded_bridge_governance.rs (postfiatl1v2 @ 071b6dc461efc7a9105b2d3cac6acd3686901e7d)
+Lines: 2011-2034 (GovernanceAmendment struct)
+---
+pub struct GovernanceAmendment {
+    pub amendment_id: String,
+    pub chain_id: String,
+    pub genesis_hash: String,
+    pub protocol_version: u32,
+    pub instance_id: String,
+    pub proposal_id: String,
+    pub certificate_id: String,
+    pub proposer: String,
+    pub validators: Vec<String>,
+    pub quorum: usize,
+    pub kind: String,
+    pub value: u32,
+    #[serde(default, skip_serializing_if = "is_zero_u64")]
+    pub activation_height: u64,
+    #[serde(default, skip_serializing_if = "is_zero_u64")]
+    pub veto_until_height: u64,
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub paused: bool,
+    pub support: Vec<String>,
+    pub votes: Vec<GovernanceVote>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub signed_authorizations: Vec<SignedGovernanceAuthorizationV2>,
+}

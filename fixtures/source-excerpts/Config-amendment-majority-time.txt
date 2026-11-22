@@ -1,0 +1,11 @@
+File: cfg/postfiatd-testnet-full.cfg lines 1464-1468 and cfg/postfiatd-mainnet-full.cfg lines 1459-1460 (postfiatd @ 0085a1ff885d6a446369cf73a4430f75af22be55)
+---
+== testnet ==
+[network_id]
+2025
+
+[amendment_majority_time]
+3 days
+== mainnet ==
+[network_id]
+2026

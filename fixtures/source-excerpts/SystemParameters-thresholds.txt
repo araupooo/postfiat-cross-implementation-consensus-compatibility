@@ -1,0 +1,16 @@
+File: include/xrpl/protocol/SystemParameters.h (postfiatd @ 0085a1ff885d6a446369cf73a4430f75af22be55)
+Lines: 44-45 (INITIAL_XRP), 79-88 (amendment thresholds, majority time)
+---
+constexpr XRPAmount INITIAL_XRP{100'000'000'000 * DROPS_PER_XRP};
+static_assert(INITIAL_XRP.drops() == 100'000'000'000'000'000);
+[...]
+
+    @note This value is used by legacy code and will become obsolete
+          once the fixAmendmentMajorityCalc amendment activates.
+*/
+constexpr std::ratio<204, 256> preFixAmendmentMajorityCalcThreshold;
+
+constexpr std::ratio<67, 100> postFixAmendmentMajorityCalcThreshold;
+
+/** The minimum amount of time an amendment must hold a majority */
+constexpr std::chrono::seconds const defaultAmendmentMajorityTime = std::chrono::weeks{2};

@@ -1,0 +1,91 @@
+File: src/xrpld/app/ledger/Ledger.cpp (postfiatd @ 0085a1ff885d6a446369cf73a4430f75af22be55)
+Lines: 169-256 (Ledger::Ledger(create_genesis_t))
+---
+    create_genesis_t,
+    Config const& config,
+    std::vector<uint256> const& amendments,
+    Family& family)
+    : mImmutable(false)
+    , txMap_(SHAMapType::TRANSACTION, family)
+    , stateMap_(SHAMapType::STATE, family)
+    , rules_{config.features}
+    , j_(beast::Journal(beast::Journal::getNullSink()))
+{
+    info_.seq = 1;
+    info_.drops = INITIAL_XRP;
+    info_.closeTimeResolution = ledgerGenesisTimeResolution;
+
+    // Select genesis account based on network type:
+    // - PostFiat production networks (mainnet=2026, testnet=2025) use the
+    //   PostFiat genesis account UNLESS running in standalone mode
+    // - All other networks (devnet, ai-devnet, standalone, unit tests):
+    //   derive from "masterpassphrase" (rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh)
+    AccountID id;
+    if (config.standalone())
+    {
+        auto const seed = generateSeed("masterpassphrase");
+        auto const keypair = generateKeyPair(KeyType::secp256k1, seed);
+        id = calcAccountID(keypair.first);
+    }
+    else if (config.NETWORK_ID == 2025 || config.NETWORK_ID == 2026)
+    {
+        // PostFiat production networks
+        id = *parseBase58<AccountID>("r4vhrMChCsaoFsBoCkRTRGUuc1njfr7bmA");
+    }
+    else
+    {
+        auto const seed = generateSeed("masterpassphrase");
+        auto const keypair = generateKeyPair(KeyType::secp256k1, seed);
+        id = calcAccountID(keypair.first);
+    }
+    {
+        auto const sle = std::make_shared<SLE>(keylet::account(id));
+        sle->setFieldU32(sfSequence, 1);
+        sle->setAccountID(sfAccount, id);
+        sle->setFieldAmount(sfBalance, info_.drops);
+        rawInsert(sle);
+    }
+
+    if (!amendments.empty())
+    {
+        auto const sle = std::make_shared<SLE>(keylet::amendments());
+        sle->setFieldV256(sfAmendments, STVector256{amendments});
+        rawInsert(sle);
+    }
+
+    {
+        auto sle = std::make_shared<SLE>(keylet::fees());
+        // Whether featureXRPFees is supported will depend on startup options.
+        if (std::find(amendments.begin(), amendments.end(), featureXRPFees) !=
+            amendments.end())
+        {
+            sle->at(sfBaseFeeDrops) = config.FEES.reference_fee;
+            sle->at(sfReserveBaseDrops) = config.FEES.account_reserve;
+            sle->at(sfReserveIncrementDrops) = config.FEES.owner_reserve;
+        }
+        else
+        {
+            if (auto const f =
+                    config.FEES.reference_fee.dropsAs<std::uint64_t>())
+                sle->at(sfBaseFee) = *f;
+            if (auto const f =
+                    config.FEES.account_reserve.dropsAs<std::uint32_t>())
+                sle->at(sfReserveBase) = *f;
+            if (auto const f =
+                    config.FEES.owner_reserve.dropsAs<std::uint32_t>())
+                sle->at(sfReserveIncrement) = *f;
+            sle->at(sfReferenceFeeUnits) = Config::FEE_UNITS_DEPRECATED;
+        }
+        rawInsert(sle);
+    }
+
+    stateMap_.flushDirty(hotACCOUNT_NODE);
+    setImmutable();
+}
+
+Ledger::Ledger(
+    LedgerInfo const& info,
+    bool& loaded,
+    bool acquire,
+    Config const& config,
+    Family& family,

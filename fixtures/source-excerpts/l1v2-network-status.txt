@@ -1,0 +1,15 @@
+File: docs/status/network-status.md (postfiatl1v2 @ 071b6dc461efc7a9105b2d3cac6acd3686901e7d)
+Lines: 11-14 (one network, devnet only), 26 (quorum 5 of 6), 48-49 (height 1513, latest observation), 55-56 (blocks on demand)
+---
+devnet (developer network) run by six Foundation-administered validators. The
+source code is public, but outside validators cannot join and no public RPC
+endpoint is published. It is not a production mainnet, no public testnet is
+open, and the software has not been externally audited. Do not put real value
+[...]
+| Quorum | 5 of 6 (`q = floor(2n/3) + 1`; tolerates `f = 1` faulty validator) | [Finality](../architecture/finality.md) |
+[...]
+| Height | 1513 on all six validators (state root `133f1e28…`) |
+| Latest fleet observation | 2026-11-19 05:56:01–05:56:16 UTC, read-only `status` on all six: one tip and one state root. A new deposit route activated at 1461 and was revised at 1470 (revision 2). Height 1453 stalled for 15 min 31 s on 18–19 November; nothing forked or was lost, and the fix is not deployed. Neither release 6 nor 6.1 carries `main`'s fixes `d9260e937` (account history) and `569f5f73b` (redelivery) |
+[...]
+The chain makes blocks only when there are transactions to order, so height
+does not advance with wall-clock time. A height that has not moved for days is

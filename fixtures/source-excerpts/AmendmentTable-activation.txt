@@ -1,0 +1,54 @@
+File: src/xrpld/app/misc/detail/AmendmentTable.cpp (postfiatd @ 0085a1ff885d6a446369cf73a4430f75af22be55)
+Lines: 880-930 (majority hold, activation condition)
+---
+
+            continue;
+        }
+
+        bool const hasValMajority = vote->passes(entry.first);
+
+        auto const majorityTime = [&]() -> std::optional<NetClock::time_point> {
+            auto const it = majorityAmendments.find(entry.first);
+            if (it != majorityAmendments.end())
+                return it->second;
+            return std::nullopt;
+        }();
+
+        bool const hasLedgerMajority = majorityTime.has_value();
+
+        auto const logStr = [&entry, &vote]() {
+            std::stringstream ss;
+            ss << entry.first << " (" << entry.second.name << ") has "
+               << vote->votes(entry.first) << " votes";
+            return ss.str();
+        }();
+
+        if (hasValMajority && !hasLedgerMajority &&
+            entry.second.vote == AmendmentVote::up)
+        {
+            // Ledger says no majority, validators say yes, and voting yes
+            // locally
+            JLOG(j_.debug()) << logStr << ": amendment got majority";
+            actions[entry.first] = tfGotMajority;
+        }
+        else if (!hasValMajority && hasLedgerMajority)
+        {
+            // Ledger says majority, validators say no
+            JLOG(j_.debug()) << logStr << ": amendment lost majority";
+            actions[entry.first] = tfLostMajority;
+        }
+        else if (
+            hasLedgerMajority &&
+            ((*majorityTime + majorityTime_) <= closeTime) &&
+            entry.second.vote == AmendmentVote::up)
+        {
+            // Ledger says majority held
+            JLOG(j_.debug()) << logStr << ": amendment majority held";
+            actions[entry.first] = 0;
+        }
+        // Logging only below this point
+        else if (hasValMajority && hasLedgerMajority)
+        {
+            JLOG(j_.debug())
+                << logStr
+                << ": amendment holding majority, waiting to be enabled";

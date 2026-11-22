@@ -1,0 +1,36 @@
+File: src/xrpld/consensus/Consensus.h (postfiatd @ 0085a1ff885d6a446369cf73a4430f75af22be55)
+Lines: 515-530 (shouldPause phases, quorum example) and 1280-1295 (phase thresholds)
+---
+     *
+     *  Pausing may be beneficial in this situation if at least one validator
+     *  is known to be on a sequence number earlier than ours. The minimum
+     *  number of validators on the same sequence number does not guarantee
+     *  consensus, and waiting for all validators may be too time-consuming.
+     *  Therefore, a variable threshold is enacted based on the number
+     *  of ledgers past network validation that we are on. For the first phase,
+     *  the threshold is also the minimum required for quorum. For the last,
+     *  no online validators can have a lower sequence number. For intermediate
+     *  phases, the threshold is linear between the minimum required for
+     *  quorum and 100%. For example, with 3 total phases and a quorum of
+     *  67%, the 2nd phase would be ~83%. Once the final phase is reached,
+     *  if consensus still fails to occur, the cycle is begun again at phase 1.
+     *
+     * @return Whether to pause to wait for lagging proposers.
+     */
+[...]
+
+    /** Maximum phase with distinct thresholds to determine how
+     *  many validators must be on our same ledger sequence number.
+     *  The threshold for the 1st (0) phase is >= the minimum number that
+     *  can achieve quorum. Threshold for the maximum phase is 100%
+     *  of all trusted validators. Progression from min to max phase is
+     *  simply linear. If there are 5 phases (maxPausePhase = 4)
+     *  and minimum quorum is 67%, then thresholds progress as follows:
+     *  0: >=67%
+     *  1: >=75%
+     *  2: >=83%
+     *  3: >=92%
+     *  4: =100%
+     */
+    constexpr static std::size_t maxPausePhase = 4;
+

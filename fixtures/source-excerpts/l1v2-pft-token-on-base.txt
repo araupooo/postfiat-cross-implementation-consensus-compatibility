@@ -1,0 +1,25 @@
+File: docs/architecture/pft-token-on-base.md (postfiatl1v2 @ 071b6dc461efc7a9105b2d3cac6acd3686901e7d)
+Lines: 1-20 (token, supply) and the genesis-external-lane section
+---
+# The PFT Token On Base
+
+PFT is to list first as an ERC-20 on Base, with a one-for-one path into native PFT at PFTL's mainnet genesis ([milestone](../plans/active/pft-erc20-base-listing-milestone.md)). This page says what the token is, what exists today and how a Lock on Base becomes native PFT. Each fact links its source; the source is authoritative.
+
+## The token
+
+`PFTToken` is a fixed-supply ERC-20 for Base ([contracts README, "PFT token (Base)"](https://github.com/postfiatorg/postfiatl1v2/blob/main/crates/pft-token-contracts/README.md#pft-token-base)):
+
+- The constructor mints the whole supply once to the treasury. The intended treasury is a Safe multisig; a test-only switch (`PFT_TOKEN_ALLOW_EOA_TREASURY`) admits an EOA treasury, used only for the disposable rehearsal token. No function mints, burns or changes the supply later.
+- `decimals()` is fixed at 6: one token unit is one atom of native PFT, so 1 PFT is 1,000,000 units.
+- It has no owner, admin, pause, blacklist, hook or upgrade path. It is built only from OpenZeppelin `ERC20` and `ERC20Permit`, so approvals by signed message (EIP-2612) work.
+- OpenZeppelin is the submodule `crates/pft-token-contracts/lib/openzeppelin-contracts` at tag v5.7.0, commit `cab19933c33c2ad1d4c7a84864a3601dddfd16f3`; `foundry.toml` pins solc 0.8.24, 200 optimizer runs, `cancun` and the IPFS metadata hash ([README, "Deployment"](https://github.com/postfiatorg/postfiatl1v2/blob/main/crates/pft-token-contracts/README.md#deployment)).
+
+The total supply is 100 billion PFT, fixed, decided 2026-10-28. The Base ERC-20 is a slice of it, not additional supply; the rest is native PFT at genesis, and the slice size is open ([milestone, Phase 2](../plans/active/pft-erc20-base-listing-milestone.md#phase-2-the-genesis-bridge); [options paper, "Decided"](https://github.com/postfiatorg/postfiatl1v2/blob/main/docs/listings/coinbase/pft-erc20-representation-options-20261026.md#decided)).
+
+The token is its own Foundry project, `crates/pft-token-contracts`, and the CI `evm-contracts` job runs `forge test` there ([README](https://github.com/postfiatorg/postfiatl1v2/blob/main/crates/pft-token-contracts/README.md); [milestone P1.2](../plans/active/pft-erc20-base-listing-milestone.md#phase-1-the-token-on-base)):
+
+| What | Where |
+|---|---|
+| Contract | [`src/PFTToken.sol`](https://github.com/postfiatorg/postfiatl1v2/blob/main/crates/pft-token-contracts/src/PFTToken.sol) |
+43:## The genesis external lane
+45:A genesis external lane reserves native PFT for the ERC-20 slice. Genesis gives

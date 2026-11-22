@@ -1,0 +1,33 @@
+File: docs/security/index.md (postfiatl1v2 @ 071b6dc461efc7a9105b2d3cac6acd3686901e7d)
+Lines: 1-30 (audit status)
+---
+# Security
+
+This page summarizes the security position of Post Fiat L1 as recorded in the
+repository: audit status, open release gates, known defects, how to report a
+vulnerability, and where the threat model and audit scopes live.
+
+## Audit status
+
+**No external security audit is recorded in this repository.** The
+[security policy](https://github.com/postfiatorg/postfiatl1v2/blob/main/SECURITY.md)
+states that the code has internal review, replay tests and controlled-network
+evidence, but "should not be treated as externally audited production
+infrastructure." The whitepaper uses the same boundary: its "demonstrated"
+results are records the project produced itself, and it states: "Neither word
+means independently audited" ([Whitepaper](../whitepaper.md)).
+
+The only running network is a controlled devnet run by six
+Foundation-administered validators
+([Network Status](../status/network-status.md)).
+
+## Planned and requested reviews
+
+These documents define review scope. None records a completed review.
+
+| Scope | Status | Document |
+| --- | --- | --- |
+| AssetOrchard swap circuit `h_action` value binding (item P13) | Scope prepared; independent review required before P13 can close | [h_action binding audit scope](orchard-h-action-binding-audit-scope.md) |
+| pfUSDC ↔ Arc bridge contracts and SP1 ingress program | Request for quotation (2026-09-02); the auditor "has not reviewed, audited, endorsed, or co-sponsored anything" | [Arc audit scope request](../business/arc-audit-scope-20260902.md) |
+| Core protocol line count for audit sizing | 225,070 nonblank source lines at `1f478e0c` (2026-08-28) | [Core feature LOC inventory](core-feature-loc-audit-inventory.md) |
+| Specialist consensus, circuit, contract and bridge review | Open release gate (row 12) | [Release Gate Inventory](../status/release-gate-inventory.md) |

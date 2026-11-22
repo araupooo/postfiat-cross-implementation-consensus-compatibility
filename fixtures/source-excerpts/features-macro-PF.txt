@@ -1,0 +1,9 @@
+File: include/xrpl/protocol/detail/features.macro (postfiatd @ 0085a1ff885d6a446369cf73a4430f75af22be55)
+Lines: 44-47 (PF amendments), 104 (AmendmentMajorityCalc fix)
+---
+XRPL_FIX    (AMMClawbackRounding,        Supported::yes, VoteBehavior::DefaultNo)
+XRPL_FEATURE(PF_AccountExclusion,        Supported::yes, VoteBehavior::DefaultNo)
+XRPL_FEATURE(PF_ValidatorVoteTracking,   Supported::yes, VoteBehavior::DefaultNo)
+XRPL_FEATURE(TokenEscrow,                Supported::yes, VoteBehavior::DefaultNo)
+[...]
+XRPL_FIX    (AmendmentMajorityCalc,      Supported::yes, VoteBehavior::DefaultYes)

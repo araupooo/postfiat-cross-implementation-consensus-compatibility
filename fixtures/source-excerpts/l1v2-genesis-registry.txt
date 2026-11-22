@@ -1,0 +1,79 @@
+File: docs/architecture/l1v2-testnet-genesis-and-launch-spec.md (postfiatl1v2 @ 071b6dc461efc7a9105b2d3cac6acd3686901e7d)
+Lines: 100-175 (genesis registry construction, trust graph, ratification)
+---
+The evidence-source requirements come from the [Dynamic UNL evidence-source note](../governance/dynamic-unl-l1-evidence-source-note.md); score replay follows `dynamic-unl-scoring/docs/DeterministicFinalScore.md`. This specification does not claim that a qualifying round already exists: the cited documents define the evidence and replay machinery, while the selected launch round and its convergence report are required launch artifacts.
+
+Let `Selected` be the ordered output after cutoff and concentration rules. Let `Receipted` be the operators with a unique valid receipt submitted before the receipt deadline. Genesis membership is:
+
+```text
+G0 = Selected ∩ Receipted
+```
+
+No unselected operator may be inserted or used as a backfill. Correcting evidence requires a new frozen round, new round ID, and complete rebuild of the payload.
+
+### 3.2 Identity bridge (fork key → l1v2 key)
+
+Each selected operator generates a fresh ML-DSA-65 validator key and submits one `IdentityReceiptV1` containing:
+
+- receipt version;
+- compressed fork master public key;
+- raw ML-DSA-65 public key;
+- chain ID;
+- genesis-round ID;
+- receipt deadline ledger hash and sequence;
+- expiry as a fork-ledger close-time value;
+- fork-key signature; and
+- ML-DSA counter-signature.
+
+The unsigned receipt body is hashed as:
+
+```text
+receipt_hash =
+    digest("L1V2_IDENTITY_RECEIPT_V1", IdentityReceiptBodyV1)
+
+fork_message =
+    digest("L1V2_RECEIPT_FORK_SIGNATURE_V1", receipt_hash)
+
+l1v2_message =
+    digest("L1V2_RECEIPT_MLDSA_SIGNATURE_V1", receipt_hash)
+```
+
+The fork master key signs `fork_message`; the new ML-DSA key signs `l1v2_message`. Both signatures must verify, both keys must be unique, and the chain ID and round ID must exactly match the payload.
+
+The receipt deadline is identified by a finalized fork ledger hash and sequence. Its close time is the sole time reference: a receipt is valid only if its expiry is later than that close time and it was included in the published receipt set by that deadline. Local clocks are not consulted. Receipt expiry limits pre-genesis reuse; it does not remove a validator after genesis.
+
+An operator without a valid receipt is excluded by the deterministic intersection in §3.1. The slot is not backfilled. If fewer than the reviewed launch minimum remain, L2 fails.
+
+### 3.3 Template trust graph
+
+`T0` assigns every validator the same template trust view: one essential subset `S = G0`, with `n_S = |G0|` and:
+
+```text
+q_S = ceil(4 * n_S / 5)
+t_S = min(ceil(n_S / 5), floor((q_S - 1) / 2), 2*q_S - n_S - 1)
+```
+
+These are reviewed launch-profile parameters, not Consensus v2 constants.
+
+The `4/5` quorum targets agreement by a large supermajority while retaining approximately one-fifth non-participation headroom before integer rounding. `t_S` takes the most conservative of:
+
+1. the same one-fifth launch-fault budget;
+2. the bound required by `2*t_S < q_S`; and
+3. the bound required by `t_S < 2*q_S - n_S`.
+
+The checker enforces those inequalities and Cobalt linkage independently of this profile. Changing the profile therefore requires a new reviewed payload but cannot bypass checker soundness.
+
+Worked launch examples:
+
+```text
+n_S = 12:
+q_S = ceil(48/5) = 10
+t_S = min(ceil(12/5), floor(9/2), 20-12-1)
+    = min(3, 4, 7) = 3
+checks: 3 < 8 and 6 < 10
+
+n_S = 20:
+q_S = 16
+t_S = min(4, 7, 11) = 4
+checks: 4 < 12 and 8 < 16
+```

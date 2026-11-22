@@ -1,0 +1,60 @@
+{
+ "probed_at_utc": "2026-11-22T17:42:09Z",
+ "build_version": "1.0.9",
+ "network_id": 2025,
+ "server_state": "full",
+ "peers": 21,
+ "validation_quorum": 17,
+ "validated_ledger_seq": 8275824,
+ "validated_ledger_hash": "B40F866DF592E86436BC949DD51B3B894E96C7259E8C814DE4B47EB244397563",
+ "complete_ledgers": "8200054-8275824",
+ "uptime_seconds": 2248922,
+ "last_close_proposers": 24,
+ "last_close_converge_time_ms": 2001,
+ "ledger_index": "8275824",
+ "ledger_close_time": "2026-Nov-22 17:28:53.000000000 UTC",
+ "ledger_close_time_iso": "2026-11-22T17:28:53Z",
+ "ledger_close_time_resolution": 10,
+ "ledger_closed_matches": false,
+ "total_coins_drops": 99999999966551436,
+ "total_coins_pft": 99999999966.55144,
+ "base_fee_drops": "10",
+ "median_fee_drops": "5000",
+ "current_queue_size": "0",
+ "max_queue_size": "2000",
+ "reserve_base_drops": 10000000,
+ "reserve_increment_drops": 2000000,
+ "genesis_account": "r4vhrMChCsaoFsBoCkRTRGUuc1njfr7bmA",
+ "genesis_account_balance_drops": 96999999999999880,
+ "genesis_account_balance_pft": 96999999999.99988,
+ "genesis_account_sequence": 13,
+ "genesis_supply_drops_assumed": 100000000000000000,
+ "supply_reconciliation": {
+  "genesis_supply_drops": 100000000000000000,
+  "total_coins_drops": 99999999966551436,
+  "burned_by_fees_drops": 33448564,
+  "burned_by_fees_pft": 33.448564,
+  "genesis_account_balance_drops": 96999999999999880,
+  "other_accounts_drops": 2999999966551556,
+  "other_accounts_pft": 2999999966.551556,
+  "closes": true
+ },
+ "xrpl_genesis_account_found": false,
+ "xrpl_genesis_account_error": "actNotFound",
+ "xrpl_root_account_found": false,
+ "xrpl_root_account_error": "actNotFound",
+ "admin_methods_blocked": {
+  "validators": "Forbidden",
+  "peers": "Forbidden"
+ },
+ "unknown_method": {
+  "error": "unknownCmd",
+  "error_code": 32,
+  "error_message": "Unknown method.",
+  "request": {
+   "command": "no_such_method"
+  },
+  "status": "error"
+ },
+ "ws_upgrade_probe": "== wss://rpc.testnet.postfiat.org:443 ==\nHTTP/1.1 200 Connection Established\n\nHTTP/1.1 401 Unauthorized\nAlt-Svc: h3=\":443\"; ma=2592000\nDate: Sun, 22 Nov 2026 17:29:19 GMT\nContent-Type: text/html\nServer: Caddy\nServer: postfiatd-1.0.9\nContent-Length: 17\n\nInvalid protocol.== wss://rpc.testnet.postfiat.org:6005 ==\nHTTP/1.1 200 Connection Established\n\n"
+}

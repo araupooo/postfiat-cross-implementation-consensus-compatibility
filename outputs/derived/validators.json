@@ -1,0 +1,108 @@
+{
+ "validators_total": 66,
+ "unl_count": 25,
+ "unl_all_version": [
+  "1.0.9"
+ ],
+ "unl_all_domains_verified": true,
+ "versions": {
+  "1.0.0": 2,
+  "1.0.4": 9,
+  "1.0.8": 1,
+  "1.0.9": 54
+ },
+ "non_latest_version_count": 12,
+ "non_latest_version_unl_count": 0,
+ "domains_verified": 55,
+ "with_domain": 57,
+ "agreement_24h": {
+  "min": 0.0,
+  "mean": 0.9644812121212122,
+  "at_least_0_999": 63,
+  "total_missed": 66928,
+  "unl_total_missed": 38325
+ },
+ "stale_unl_members": [
+  {
+   "validation_public_key": "nHBxQ3srN8ErMvfMgsJ3jycSSaMFyHMk5WbrJVUTXPZgNh1VdbHH",
+   "domain": "paymuslam.top",
+   "server_version": "1.0.9",
+   "current_index": 8179976,
+   "agreement_24h_score": "0.00000",
+   "agreement_24h_missed": 28550
+  }
+ ],
+ "topology_nodes": 72,
+ "topology_node_count_field": 72,
+ "topology_link_count_field": 0,
+ "topology_inbound_sum": 690,
+ "topology_outbound_sum": 701,
+ "topology_states": {
+  "null": 16,
+  "full": 56
+ },
+ "topology_country_codes": [
+  "AU",
+  "BR",
+  "CA",
+  "CH",
+  "DE",
+  "FI",
+  "FR",
+  "GB",
+  "JP",
+  "KR",
+  "LT",
+  "NL",
+  "NO",
+  "PH",
+  "PL",
+  "SG",
+  "US",
+  "ZA"
+ ],
+ "vhs_health": {
+  "count": "9"
+ },
+ "vhs_networks": [
+  [
+   "test",
+   "rpc.testnet.postfiat.org"
+  ],
+  [
+   "1",
+   "11817ed9-54d3-4ac0-968a-9daaaf4fd9cb.webhook.site/crawljson-i3053m1812b58f"
+  ],
+  [
+   "2",
+   "aa1e2670-3740-48a1-b233-21f2437d63a4.webhook.site/i2645t18349f9bc#z"
+  ]
+ ],
+ "vhs_validators_unl_param_ignored": true,
+ "validator_list_file": {
+  "version": 2,
+  "sequence": 30,
+  "expiration": "2028-03-31T16:14:53Z",
+  "effective": "2026-11-17T20:10:08Z",
+  "validators_in_file": 25,
+  "unl_from_vhs_equals_file_count": true
+ },
+ "explorer_metrics": {
+  "base_fee": "0.00001",
+  "txn_sec": "0.09",
+  "txn_ledger": "0.26",
+  "ledger_interval": "3.022",
+  "avg_fee": "0.00001000"
+ },
+ "explorer_health_body": "{\"message\":\"rippled unreachable\"}",
+ "quorum_check": {
+  "unl_size": 25,
+  "validation_quorum_reported": 17,
+  "ceil_0_67_x_unl": 17,
+  "ceil_0_60_x_unl": 15,
+  "matches_67pct_formula": true,
+  "l1v2_quorum_for_same_n": 17,
+  "quorum_formulas_agree_at_this_n": true,
+  "source": "ValidatorList::calculateQuorum, postfiatd src/xrpld/app/misc/detail/ValidatorList.cpp:1845-1933; l1v2 bft_quorum_threshold, postfiatl1v2 crates/ordering_fast/src/lib.rs:345-356"
+ }
+}
